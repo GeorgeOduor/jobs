@@ -1,0 +1,32 @@
+<section class="protp bounce-in-left" id="mysection">
+    <div id="text-contents">
+        <div class="job-posting">
+            <img alt="{{companyname}}" class="company-logo"
+                src="{{companylogo}}" />
+            <div class="posting-details">
+                <h3 class="company-name">{{companyname}}</h3>
+                <p class="location"><i aria-hidden="true" class="fa
+                        fa-map-marker"></i> : {{location}}</p>
+                <p class="posting-date">Date : {{postingdate}} </p>
+            </div>
+        </div>
+        {{job_desc}}
+        <div class="application cta">
+            <a class="applybutton-cta" href="{{applicationlinks}}"
+                rel="nofollow" target="_blank">Apply on company website</a>
+        </div>
+    </div>
+</section>
+<!-- if statement jinja -->
+{% if protip_status %}
+<hr />
+<div id="accordion">
+    <div class="accordion-section bounce-in-right">
+        <h2 class="accordion-heading"><i class="fas fa-info-circle
+                animated-info-icon"></i> Pro tip</h2>
+        <div class="accordion-content">
+            {{protip}}
+        </div>
+    </div>
+</div>
+{% endif %}
