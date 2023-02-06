@@ -1,12 +1,12 @@
+from time import sleep
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from jinja2 import FileSystemLoader, Environment
 from googleapiclient.discovery import build
-from oauth2client import client
-import requests
 import pickle
-import sys
 import os
+
+from reretry import retry
 
 SCOPES = [
     "https://www.googleapis.com/auth/blogger",
@@ -34,7 +34,7 @@ def get_blogger_service_obj(credfile):
     drive_service = build("drive", "v3", credentials=creds)
     return drive_service, blog_service
 
-
+@retry(delay = 15,tries = 5,show_traceback=True)
 def create_blog_post(BLOG_ID, api_handler=None, body_content="", isDraft=True):
     try:
         if not api_handler:
@@ -43,14 +43,15 @@ def create_blog_post(BLOG_ID, api_handler=None, body_content="", isDraft=True):
         resp = blogs.insert(
             blogId=BLOG_ID, isDraft=isDraft, fetchImages=True, body=body_content
         ).execute()
-        print("The blog post has been created successfully")
+        print("The blog post has been created successfully...",end="\r")
+        sleep(10)
         return resp
     except Exception as ex:
         print(str(ex))
-        return None
+        raise
 
 
-def prep_post_template(template_path, template_name, post_data):
+def prep_post_template(template_path, template_name, post_data,protip_status=False):
     env = Environment(loader=FileSystemLoader(template_path))
     template = env.get_template(template_name)
     return template.render(
@@ -77,9 +78,16 @@ def post_body(**res):
         return post_df
     except Exception as e:
         print("Post Data erorr", e)
-        return None
+        raise
 
-
+def update_publish_status(wks,value_search,new_value):
+    try:
+        cell = wks.find(str(value_search)) 
+        wks.update(f"K{cell.row}", new_value)
+        print("Post record updated successfuly {e}",end="\r")
+    except Exception as e:
+        # pass
+        print("Error updating value",e)
 #
 
 #

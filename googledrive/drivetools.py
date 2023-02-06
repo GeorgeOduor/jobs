@@ -1,9 +1,10 @@
+
 import logging
 import gspread
 from gspread_dataframe import set_with_dataframe
 from google.oauth2.service_account import Credentials
 from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from reretry import retry
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 class DriveTools:
     scopes = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive']
-
+    @retry(delay=10,tries=-1)
     def __init__(self, creds_file, workbook):
         self.creds_file = creds_file
         self.gauth = GoogleAuth()
@@ -35,11 +36,18 @@ class DriveTools:
         except Exception as e:
             print(e)
         
-    def get_existing_jobs(self, sheet_index):
+    def get_existing_jobs(self, sheet_index,full=False):
         try:
             wks = self.gs.get_worksheet(sheet_index)
             available = [i for i in wks.col_values(4) if i != "job_id"]
-            return available
+            if full:
+                return wks.get_all_records()
+            else:
+                return available
         except Exception as e:
             return None
+        
+    
+            
+
 

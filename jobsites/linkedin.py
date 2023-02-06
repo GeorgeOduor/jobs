@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup as bs
 import datetime
 import requests
 import logging
+
+from reretry import retry
 logger = logging.getLogger(__name__)
 
 class LinkedInScrap:
@@ -132,14 +134,17 @@ class LinkedInScrap:
                 "crawl_time": str(datetime.datetime.now()),
                 # "url": response.url,
                 "details": details,
+                "posted":False
             }
             
             return res
         except Exception as e:
             print(e)
-
+            
+    @retry(delay=15,tries = -1,show_traceback=True)
     def main(self,end):
         start = 0
+        page = 0
         jd = []
         while True:
             logger.debug("getting links")
@@ -150,7 +155,7 @@ class LinkedInScrap:
                 print(f'{i} of {len(soup)}')
                 new_jd = self.jobdetails(soup[i])
                 jd.append(new_jd)
-            start = start + 2
+            start = start + 25
             logger.debug('current start', start,end = "\r")
             if start >= end:
                 break  
